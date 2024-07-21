@@ -1,0 +1,6 @@
+uploads/**
+meilisearch/**
+data/**
+database/**
+
+.env

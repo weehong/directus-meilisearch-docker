@@ -1,0 +1,77 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - 54321:5432
+
+  cache:
+    image: redis:latest
+    container_name: redis
+
+  search:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+      MEILI_NO_ANALYTICS: ${MEILI_NO_ANALYTICS:-true}
+      MEILI_ENV: ${MEILI_ENV:-production}
+      MEILI_LOG_LEVEL: ${MEILI_LOG_LEVEL:-INFO}
+      MEILI_MAX_INDEXING_MEMORY: ${MEILI_MAX_INDEXING_MEMORY:-500Mb}
+    ports:
+      - 7700:7700
+    volumes:
+      - ./meilisearch/meili_data:/meili_data
+    restart: unless-stopped
+
+  directus:
+    image: directus/directus:latest
+    container_name: directus
+    volumes:
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+    environment:
+      KEY: ${KEY}
+      SECRET: ${SECRET}
+
+      DB_CLIENT: ${DB_CLIENT:-pg}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS: ${CACHE_STORE:-redis://cache:6379}
+      CACHE_ENABLED: ${CACHE_ENABLED:-true}
+      CACHE_AUTO_PURGE: ${CACHE_AUTO_PURGE:-true}
+      CACHE_STORE: ${CACHE_STORE:-redis://cache:6379}
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      WEBSOCKETS_ENABLED: true
+
+      DIRECTUS_HOST: ${DIRECTUS_HOST}
+      DIRECTUS_KEY: ${DIRECTUS_KEY}
+
+      INSTANT_SEARCH_INDEX: ${INSTANT_SEARCH_INDEX}
+
+      MEILI_HOST: ${MEILI_HOST}
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+
+      ALGOLIA_APP_ID: ${ALGOLIA_APP_ID}
+      ALGOLIA_KEY: ${ALGOLIA_KEY}
+    ports:
+      - 8055:8055
+    depends_on:
+      - search
+      - cache
+      - db
+
+volumes:
+  postgres_data:
