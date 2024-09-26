@@ -26,7 +26,3 @@ Step 4: Start the service:
 ```bash
 docker compose up -d
 ```
-
-## Read More
-You can read more how to setup the service by reading this article.
-https://vernonweehong.com/blog/6c31df81-bc56-4bd0-af8f-7436c1ec9b15
